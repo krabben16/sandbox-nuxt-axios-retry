@@ -1,5 +1,5 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { IAxiosRetryConfig, isNetworkOrIdempotentRequestError } from 'axios-retry'
+import { IAxiosRetryConfig } from 'axios-retry'
 
 const namespace = 'axios-retry-state'
 
@@ -34,7 +34,7 @@ export default function axiosRetry(axios: AxiosInstance, retryConfig?: IAxiosRet
     } = retryConfig ?? {}
 
     const currentState = getCurrentState(config)
-    const shouldRetry = isNetworkOrIdempotentRequestError(error) && currentState.retryCount < retries
+    const shouldRetry = currentState.retryCount < retries
 
     if (shouldRetry) {
       currentState.retryCount += 1
@@ -44,7 +44,7 @@ export default function axiosRetry(axios: AxiosInstance, retryConfig?: IAxiosRet
 
       // リクエストのタイムアウトを延長
       if (config.timeout) {
-        console.log({ timeout: config.timeout, delay })
+        // console.log({ timeout: config.timeout, delay })
         config.timeout = config.timeout + delay
       }
 
