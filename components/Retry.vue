@@ -13,11 +13,11 @@ export default defineComponent({
         .get('/')
         .then((res) => {
           // 初回リクエストとリトライリクエストのいずれかで200が返ればこちら
-          console.log(`res: ${JSON.stringify(res)}`)
+          console.log(res)
         })
         .catch((err) => {
           // いずれのリクエストでも200が返らなければこちら
-          console.log(`err: ${JSON.stringify(err)}`)
+          console.log(err)
         })
     }
     return {}
