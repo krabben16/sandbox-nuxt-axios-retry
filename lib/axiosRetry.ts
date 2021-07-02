@@ -29,7 +29,7 @@ export default function axiosRetry(axios: AxiosInstance, retryConfig?: IAxiosRet
     }
 
     const {
-      retries = 3,
+      retries = 0,
       retryDelay = noDelay,
     } = retryConfig ?? {}
 
