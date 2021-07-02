@@ -37,6 +37,7 @@ describe('retries', () => {
     const client = axios.create()
 
     setupResponses(client, [
+      // 初回リクエスト
       () =>
         nock('http://example.com')
           .get('/test')
@@ -102,6 +103,7 @@ describe('timeout', () => {
       () =>
         nock('http://example.com')
           .get('/test')
+          .delay(400) // timeout=500
           .reply(200)
     ])
 
@@ -125,14 +127,17 @@ describe('timeout', () => {
       () =>
         nock('http://example.com')
           .get('/test')
+          .delay(400) // timeout=500
           .replyWithError(NETWORK_ERROR),
       () =>
         nock('http://example.com')
           .get('/test')
+          .delay(800) // timeout=1000
           .replyWithError(NETWORK_ERROR),
       () =>
         nock('http://example.com')
           .get('/test')
+          .delay(1200) // timeout=1500
           .reply(200)
     ])
 
