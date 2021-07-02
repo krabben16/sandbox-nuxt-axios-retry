@@ -1,5 +1,5 @@
 <template>
-  <Retry />
+  <Logo />
 </template>
 
 <script lang="ts">
