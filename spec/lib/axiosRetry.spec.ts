@@ -27,13 +27,19 @@ function setupResponses (client: AxiosInstance, responses: (() => nock.Scope)[])
   configureResponse()
 }
 
+/**
+ * 正常系
+ * - リトライしない
+ * 異常系
+ * - リトライする
+ */
 describe('retries', () => {
   afterEach(() => {
     nock.cleanAll()
     nock.enableNetConnect()
   })
 
-  it('【正常系】200が返されるのでリトライされず、retryCountの値が変わらない', done => {
+  it('【正常系】200が返されるのでリトライされず、retryCountの値は変わらない', done => {
     const client = axios.create()
 
     setupResponses(client, [
@@ -88,13 +94,21 @@ describe('retries', () => {
   })
 })
 
+/**
+ * 正常系
+ * - タイムアウトしない リトライしない
+ * 異常系
+ * - タイムアウトしない リトライする
+ * - タイムアウトする リトライしない
+ * - タイムアウトする リトライする
+ */
 describe('timeout', () => {
   afterEach(() => {
     nock.cleanAll()
     nock.enableNetConnect()
   })
 
-  it('【正常系】タイムアウト以内にレスポンスが返されるのでリトライされず、timeoutの値が変わらない', done => {
+  it('【正常系】タイムアウト以内にレスポンスが返されるのでリトライされず、timeoutの値は変わらない', done => {
     const client = axios.create({
       timeout: 500,
     })
@@ -107,7 +121,7 @@ describe('timeout', () => {
           .reply(200)
     ])
 
-    axiosRetry(client, { retryDelay: () => 500 })
+    axiosRetry(client)
 
     client
       .get('http://example.com/test')
@@ -141,7 +155,7 @@ describe('timeout', () => {
           .reply(200)
     ])
 
-    axiosRetry(client, { retryDelay: () => 500 })
+    axiosRetry(client, { retries: 3, retryDelay: () => 500 })
 
     client
       .get('http://example.com/test')
@@ -157,6 +171,30 @@ describe('timeout', () => {
       })
   })
 
+  it('【異常系】タイムアウト以内にレスポンスが返されないがリトライされず、timeoutの値は変わらない', done => {
+    const client = axios.create({
+      timeout: 100,
+    })
+
+    // タイムアウトした場合 code=ECONNABORTED
+    setupResponses(client, [
+      () =>
+        nock('http://example.com')
+          .get('/test')
+          .delay(500) // timeout=100
+          .replyWithError(NETWORK_ERROR),
+    ])
+
+    axiosRetry(client)
+
+    client
+      .get('http://example.com/test')
+      .catch(error => {
+        expect(error.config.timeout).toBe(100)
+        done()
+      })
+  })
+
   it('【異常系】タイムアウト以内にレスポンスが返されないのでリトライされ、timeoutの値が増える', done => {
     const client = axios.create({
       timeout: 100,
@@ -167,21 +205,21 @@ describe('timeout', () => {
       () =>
         nock('http://example.com')
           .get('/test')
-          .delay(500)
+          .delay(500) // timeout=100
           .replyWithError(NETWORK_ERROR),
       () =>
         nock('http://example.com')
           .get('/test')
-          .delay(500)
+          .delay(500) // timeout=200
           .replyWithError(NETWORK_ERROR),
       () =>
         nock('http://example.com')
           .get('/test')
-          .delay(500)
+          .delay(500) // timeout=300
           .replyWithError(NETWORK_ERROR),
     ])
 
-    axiosRetry(client, { retryDelay: () => 100 })
+    axiosRetry(client, { retries: 3, retryDelay: () => 100 })
 
     client
       .get('http://example.com/test')
