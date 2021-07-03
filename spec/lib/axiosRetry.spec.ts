@@ -50,7 +50,7 @@ describe('retries', () => {
           .reply(200)
     ])
 
-    axiosRetry(client, { retries: 3 })
+    axiosRetry(client)
 
     client
       .get('http://example.com/test')
