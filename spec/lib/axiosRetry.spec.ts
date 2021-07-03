@@ -82,6 +82,11 @@ describe('retries', () => {
           .reply(200)
     ])
 
+    // client.interceptors.response.use(undefined, (error) => {
+    //   console.log(error.code) // ECONNRESET
+    //   return Promise.reject(error)
+    // })
+
     axiosRetry(client, { retries: 3 })
 
     client
